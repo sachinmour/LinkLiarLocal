@@ -13,6 +13,7 @@ class MACAnonymizerTest: XCTestCase {
 //    userDefaults.set("00:03:05:00:01:01", forKey: "seed")
     let output = MACAnonymizer.anonymize(input)
 
+    XCTAssertEqual(input.address, output)
 //    XCTAssertEqual("00:04:07:00:ab:f0", output)
   }
 
@@ -22,6 +23,7 @@ class MACAnonymizerTest: XCTestCase {
 //    userDefaults.set("11:00:00:00:10:01", forKey: "seed")
     let output = MACAnonymizer.anonymize(input)
 
+    XCTAssertEqual(input.address, output)
 //    XCTAssertEqual("00:ff:ff:ff:0f:f0", output)
   }
 }

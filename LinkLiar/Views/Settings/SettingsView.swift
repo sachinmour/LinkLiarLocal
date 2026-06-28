@@ -25,19 +25,11 @@ struct SettingsView: View {
           Label("Welcome", systemImage: "figure.dance")
         }
 
-        NavigationLink(value: Pane.community.rawValue) {
-          Label("Community", systemImage: "bubble")
-        }
-
         NavigationLink(value: Pane.help.rawValue) {
           Label("FAQ", systemImage: "book.pages")
         }
 
         Spacer()
-
-        NavigationLink(value: Pane.preferences.rawValue) {
-          Label("Settings", systemImage: "gear")
-        }
 
         NavigationLink(value: Pane.vendors.rawValue) {
           Label("Vendors", systemImage: "apple.logo")
@@ -46,15 +38,9 @@ struct SettingsView: View {
         Spacer()
         Text("Interfaces")
 
-        NavigationLink(value: Pane.defaultPolicy.rawValue) {
-          Label("Interface Default", systemImage: "wand.and.stars.inverse")
-        }
-
         ForEach(state.allInterfaces) { interface in
-          let isHidden = state.config.policy(interface.hardMAC).action == .hide
-          let opacity = isHidden ? 0.5 : 1
           NavigationLink(value: interface.id) {
-            Label(interface.name, systemImage: interface.iconName).opacity(opacity)
+            Label(interface.name, systemImage: interface.iconName)
           }
         }
 
@@ -76,20 +62,17 @@ struct SettingsView: View {
       SettingsDetailView(selectedFolder: $selectedFolder).environment(state)
 
     }.presentedWindowStyle(.hiddenTitleBar)
-      .frame(minWidth: 650, idealWidth: 650, maxWidth: 650, minHeight: 500, idealHeight: 500, maxHeight: 800)
+      .frame(minWidth: 780, idealWidth: 780, maxWidth: 780, minHeight: 500, idealHeight: 500, maxHeight: 800)
   }
 }
 
 extension SettingsView {
   enum Pane: String {
     case welcome
-    case preferences
     case vendors
     case troubleshoot
     case help
-    case community
     case uninstall
-    case defaultPolicy
   }
 }
 

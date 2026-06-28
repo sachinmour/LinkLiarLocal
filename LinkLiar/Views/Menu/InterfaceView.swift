@@ -6,6 +6,8 @@ import SwiftUI
 struct InterfaceView: View {
   @Bindable var state: LinkState
   @Bindable var interface: Interface
+  @State private var specificAddress = ""
+  @State private var isSpecificMACPresented = false
 
   var body: some View {
     // Separating Icons and text
@@ -54,21 +56,49 @@ struct InterfaceView: View {
         }
       }
 
-      // Padding parity on the right side (invisible).
-      Image("MenuIconLeaking").opacity(0)
+      if interface.isSpoofable {
+        Menu {
+          actionItems
+        } label: {
+          Image(systemName: "ellipsis.circle")
+        }
+        .menuStyle(.borderlessButton)
+        .disabled(state.manualActionInProgress)
+        .help("Interface actions")
+      } else {
+        // Padding parity on the right side (invisible).
+        Image("MenuIconLeaking").opacity(0)
+      }
 
     // Without this, only words (captions) are right-clickable. With it, you can click anywhere in this HStack.
     // See https://www.hackingwithswift.com/quick-start/swiftui/how-to-control-the-tappable-area-of-a-view-using-contentshape
     }.contentShape(Rectangle())
     .contextMenu {
-      Button("Copy MAC address") { copy(interface.softMAC?.address ?? "??:??:??:??:??:??") }
-
-      if state.config.arbiter(interface.hardMAC).action == .random && state.daemonRegistration == .enabled {
-        Button("Randomize now") {
-          Log.debug("Force randomization...")
-          Config.Writer(state).resetExceptionAddress(interface: interface)
+      actionItems
+    }.sheet(isPresented: $isSpecificMACPresented) {
+      VStack(alignment: .leading, spacing: 12) {
+        Text("Set Specific MAC")
+          .font(.headline)
+        Text(interface.bsd.name)
+          .font(.system(.body, design: .monospaced))
+          .foregroundStyle(.secondary)
+        TextField("aa:bb:cc:dd:ee:ff", text: $specificAddress)
+          .textFieldStyle(.roundedBorder)
+          .font(.system(.body, design: .monospaced))
+        HStack {
+          Spacer()
+          Button("Cancel") {
+            isSpecificMACPresented = false
+          }
+          Button("Apply") {
+            MACChangeService.setSpecific(interface: interface, address: specificAddress, state: state)
+            isSpecificMACPresented = false
+          }
+          .keyboardShortcut(.defaultAction)
+          .disabled(state.manualActionInProgress)
         }
-      }
+      }.padding()
+        .frame(width: 280)
     }
   }
 
@@ -76,6 +106,37 @@ struct InterfaceView: View {
     let pasteboard = NSPasteboard.general
     pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
     pasteboard.setString(content, forType: NSPasteboard.PasteboardType.string)
+  }
+
+  @ViewBuilder
+  private var actionItems: some View {
+    Button("Copy MAC address") {
+      copy(interface.softMAC?.address ?? "??:??:??:??:??:??")
+    }
+
+    if interface.isSpoofable {
+      Divider()
+      Button("Randomize Private") {
+        MACChangeService.randomizePrivate(interface: interface, state: state)
+      }
+      .disabled(state.manualActionInProgress)
+
+      Button("Randomize Vendor-like") {
+        MACChangeService.randomizeVendorLike(interface: interface, state: state)
+      }
+      .disabled(state.manualActionInProgress)
+
+      Button("Restore Original") {
+        MACChangeService.restoreOriginal(interface: interface, state: state)
+      }
+      .disabled(state.manualActionInProgress)
+
+      Button("Set Specific MAC") {
+        specificAddress = interface.softMAC?.address ?? ""
+        isSpecificMACPresented = true
+      }
+      .disabled(state.manualActionInProgress)
+    }
   }
 }
 

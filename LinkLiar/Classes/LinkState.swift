@@ -1,6 +1,7 @@
 // Copyright (c) halo https://github.com/halo/LinkLiar
 // SPDX-License-Identifier: MIT
 
+import Foundation
 import SwiftUI
 
 @Observable
@@ -11,30 +12,27 @@ class LinkState {
     self.configDictionary = configDictionary ?? [:]
 
     if isolate {
+#if DEBUG
       allInterfaces = Interfaces.all(.sync)
-      configFilePath = "/tmp/linkliar.isolation.json"
+      configFilePath = FileManager.default.temporaryDirectory
+        .appendingPathComponent("LinkLiarLocal.isolation.json")
+        .path
       isolated = true
+#endif
     }
   }
 
   // GUI
   var wantsToQuit = false
+  var manualActionMessage: String?
+  var manualActionError: String?
+  var manualActionInProgress = false
   var version: Version = {
     Version(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0")
   }()
 
-  // Daemon
-  var daemonRegistration = DaemonRegistrations.unknown
-  var xpcStatus = XpcStatuses.unknown
-  var daemonVersion = Version("0.0.0")
-
   // Network
   var allInterfaces = [Interface]()
-  var nonHiddenInterfaces: [Interface] {
-    self.allInterfaces.filter {
-      config.policy($0.hardMAC).action != .hide
-    }
-  }
 
   // Paths
 
@@ -53,28 +51,6 @@ class LinkState {
 
   // Derived
   var warnAboutLeakage: Bool {
-    self.nonHiddenInterfaces.contains(where: { interface in
-      interface.hasOriginalMAC && config.policy(interface.hardMAC).action != .ignore
-    })
-  }
-}
-
-extension LinkState {
-  // Analogous to `SMAppService.Status`.
-  enum DaemonRegistrations: String {
-    case unknown // I.e. not initialized yet
-    case notRegistered
-    case enabled
-    case requiresApproval
-    case notFound
-    case novel // I.e. didn't exist yet in `SMAppService.Status` at the time of this release.
-  }
-
-  enum XpcStatuses: String {
-    case unknown
-    case initialized
-    case connected
-    case invalidated
-    case interrupted
+    self.allInterfaces.contains(where: { $0.hasOriginalMAC })
   }
 }

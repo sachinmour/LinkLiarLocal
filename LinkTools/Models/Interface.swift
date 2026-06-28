@@ -141,12 +141,4 @@ extension Interface {
     case async
     case none
   }
-
-  enum Action: String {
-    case hide
-    case ignore
-    case random
-    case specify
-    case original
-  }
 }

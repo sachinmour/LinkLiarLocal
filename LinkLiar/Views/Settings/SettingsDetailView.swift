@@ -20,20 +20,11 @@ struct SettingsDetailView: View {
       case SettingsView.Pane.welcome.rawValue:
           SettingsView.WelcomeView().environment(state)
 
-      case SettingsView.Pane.community.rawValue:
-          SettingsView.CommunityView().environment(state)
-
       case SettingsView.Pane.help.rawValue:
           SettingsView.FaqView().environment(state)
 
-      case SettingsView.Pane.preferences.rawValue:
-          SettingsView.PreferencesView().environment(state)
-
       case SettingsView.Pane.vendors.rawValue:
           SettingsView.VendorsView().environment(state)
-
-      case SettingsView.Pane.defaultPolicy.rawValue:
-        SettingsView.FallbackPolicyView().environment(state)
 
       case SettingsView.Pane.troubleshoot.rawValue:
         SettingsView.TroubleshootView().environment(state)

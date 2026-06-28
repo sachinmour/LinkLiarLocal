@@ -38,11 +38,14 @@ public struct Log {
   // MARK: Private Class Methods
 
   private static func write(_ message: String, level: OSLogType) {
-    logger.log(level: level, "\(message, privacy: .public)")
-    appendToLogfile(message, level: level)
+    let safeMessage = redacted(message)
+    logger.log(level: level, "\(safeMessage, privacy: .public)")
+    appendToLogfile(safeMessage, level: level)
   }
 
   private static func appendToLogfile(_ message: String, level: OSLogType) {
+    Paths.prepareLocalStorage()
+
     var prefix = "UNKNOWN"
 
     switch level {
@@ -54,13 +57,25 @@ public struct Log {
 
     let data = "\(prefix) \(message)\n".data(using: .utf8)!
 
-    if let fileHandle = FileHandle(forWritingAtPath: "/tmp/linkliar.log") {
+    if let fileHandle = FileHandle(forWritingAtPath: Paths.debugLogFile) {
       defer { fileHandle.closeFile() }
       fileHandle.seekToEndOfFile()
       fileHandle.write(data)
     } else {
-      // There is no logfile, which means the end-user does not want file logging
-      // You may also end up here if you turned on app sandboxing.
+      do {
+        try data.write(to: Paths.debugLogFileURL)
+        Paths.prepareLocalStorage()
+      } catch {
+        NSLog("LinkLiar Local could not write log file: \(error)")
+      }
     }
+  }
+
+  private static func redacted(_ message: String) -> String {
+    message.replacingOccurrences(
+      of: #"(?i)\b[0-9a-f]{2}(?::[0-9a-f]{2}){5}\b"#,
+      with: "<redacted-mac>",
+      options: .regularExpression
+    )
   }
 }

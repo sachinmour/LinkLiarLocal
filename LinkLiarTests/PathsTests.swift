@@ -5,29 +5,26 @@ import XCTest
 @testable import LinkLiar
 
 class PathsTests: XCTestCase {
-  override func setUp() {
-    Stage.resetArguments()
-  }
-
-  // MARK: configDirectory
-
   func testConfigDirectoryDefault() {
-    XCTAssertEqual("/Library/Application Support/io.github.halo.LinkLiar/config.json", Paths.configFile)
+    XCTAssertEqual(
+      "\(FileManager.default.homeDirectoryForCurrentUser.path)/Library/Application Support/LinkLiarLocal/config.json",
+      Paths.configFile
+    )
   }
 
-  func testConfigDirectoryEmpty() {
-    Stage.stubArguments([
-      "--config", ""
-    ])
-
-    XCTAssertEqual("/Library/Application Support/io.github.halo.LinkLiar/config.json", Paths.configFile)
+  func testLogFileDefault() {
+    XCTAssertEqual(
+      "\(FileManager.default.homeDirectoryForCurrentUser.path)/Library/Logs/LinkLiarLocal/linkliar.log",
+      Paths.debugLogFile
+    )
   }
 
-  func testConfigDirectoryCustom() {
-    Stage.stubArguments([
-      "--config", "/dev/null/over/there.json"
-    ])
-
-    XCTAssertEqual("/dev/null/over/there.json", Paths.configFile)
+  func testRuntimePathsStayInUserLibrary() {
+    XCTAssertTrue(Paths.configFile.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path))
+    XCTAssertTrue(Paths.configFile.contains("/Library/Application Support/LinkLiarLocal/"))
+    XCTAssertTrue(Paths.debugLogFile.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path))
+    XCTAssertTrue(Paths.debugLogFile.contains("/Library/Logs/LinkLiarLocal/"))
+    XCTAssertFalse(Paths.configFile.hasPrefix("/tmp/"))
+    XCTAssertFalse(Paths.debugLogFile.hasPrefix("/tmp/"))
   }
 }

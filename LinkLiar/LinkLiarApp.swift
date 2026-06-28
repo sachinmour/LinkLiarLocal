@@ -11,6 +11,8 @@ struct LinkLiarApp: App {
   // MARK: Class Methods
 
   init() {
+    Paths.prepareLocalStorage()
+
     // Start observing changes made to the config file.
     configFileObserver = FileObserver(path: Paths.configFile, callback: configFileChanged)
 
@@ -31,9 +33,6 @@ struct LinkLiarApp: App {
 
     // Asynchronously
     MACVendors.load()
-
-    // Assume that the deamon is wanted, when it is only allowed during the lifetime of the GUI.
-    if state.config.general.isRestrictedDaemon { Controller.registerDaemon(state: state) }
   }
 
   // MARK: Private Instance Properties
@@ -58,7 +57,6 @@ struct LinkLiarApp: App {
     DispatchQueue.main.async {
       Log.debug("Menu Bar appeared")
       Controller.queryAllSoftMACs(state)
-      Controller.queryDaemonRegistration(state: state)
 
       // If there was a "do you really want to quit?" warning,
       // we can remove it once the menu bar was closed and reopened.
@@ -81,15 +79,9 @@ struct LinkLiarApp: App {
   }
 
   var body: some Scene {
-//    if state.isolated {
-      MenuBarExtra("LinkLiar", image: menuBarIconName) {
-        MenuView().environment(state)
-      }.menuBarExtraStyle(.window)
-//    }
-
-    Settings {
-      SettingsView().environment(state)
-    }.windowStyle(.hiddenTitleBar)
+    MenuBarExtra("LinkLiar Local", image: menuBarIconName) {
+      MenuView().environment(state)
+    }.menuBarExtraStyle(.window)
   }
 
   private var menuBarIconName: String {

@@ -1,7 +1,7 @@
 // Copyright (c) halo https://github.com/halo/LinkLiar
 // SPDX-License-Identifier: MIT
 
-/// Service Set Identifier (aka. Wi-Fi access point name).
+/// A BSD network interface name.
 ///
 struct BSD: Identifiable {
   // MARK: - Class Methods

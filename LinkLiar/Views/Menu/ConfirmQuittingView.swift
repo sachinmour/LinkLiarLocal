@@ -1,7 +1,6 @@
 // Copyright (c) halo https://github.com/halo/LinkLiar
 // SPDX-License-Identifier: MIT
 
-import ServiceManagement
 import SwiftUI
 
 struct ConfirmQuittingView: View {
@@ -16,11 +15,11 @@ struct ConfirmQuittingView: View {
           .font(.system(size: 40))
           .padding(.bottom, 4)
 
-        Text("LinkLiar will continue to run in\nin the background. You can\nchange this in the settings.")
+        Text("A MAC change is still in progress.")
           .padding(.bottom, 4)
 
         Button(action: Controller.quitForReal) {
-          Text("Quit this Menu")
+          Text("Quit Anyway")
         }.padding(.bottom, 4)
           .buttonStyle(.borderedProminent)
 

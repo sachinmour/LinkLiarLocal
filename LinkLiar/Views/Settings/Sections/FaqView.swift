@@ -52,7 +52,7 @@ extension SettingsView {
         GroupBox("Wi-Fi needs to be on for MAC modification.", content: {
           HStack {
             Text("""
-                 "When your Wi-Fi (aka Airport) is turned off, you cannot change its MAC address. \
+                 When your Wi-Fi is turned off, you cannot change its MAC address. \
                  You might need to turn it on first.
                  """)
             Spacer()

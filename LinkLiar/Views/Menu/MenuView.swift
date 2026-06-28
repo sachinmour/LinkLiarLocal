@@ -13,20 +13,27 @@ struct MenuView: View {
 
   var body: some View {
     VStack {
-      RegisterDaemonView().environment(state)
-      ApproveDaemonView().environment(state)
-      ApplyRecommendationsView().environment(state)
-
       InterfacesView().environment(state)
 
-      if !state.nonHiddenInterfaces.isEmpty {
+      if let error = state.manualActionError {
+        Divider().padding([.top, .bottom], 3)
+        Label(error, systemImage: "exclamationmark.triangle")
+          .foregroundStyle(.red)
+          .fixedSize(horizontal: false, vertical: true)
+      } else if let message = state.manualActionMessage {
+        Divider().padding([.top, .bottom], 3)
+        Label(message, systemImage: state.manualActionInProgress ? "lock" : "checkmark.circle")
+          .foregroundStyle(.secondary)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+
+      if !state.allInterfaces.isEmpty {
         Divider().padding([.top, .bottom], 3)
       }
 
       HStack {
-        SettingsLink {
-//          Image(systemName: "gear").imageScale(.medium)
-          Text("Settings")
+        Button("Settings") {
+          SettingsWindowPresenter.show(state: state)
         }.keyboardShortcut(",", modifiers: .command)
           .buttonStyle(.accessoryBar)
 
@@ -53,20 +60,6 @@ struct MenuView: View {
 #Preview("Standard") {
   let state = LinkState()
   state.allInterfaces = Interfaces.all(.sync)
-  return MenuView().environment(state)
-}
-
-#Preview("Daemon not registered") {
-  let state = LinkState()
-  state.allInterfaces = Interfaces.all(.sync)
-  state.daemonRegistration = .notRegistered
-  return MenuView().environment(state)
-}
-
-#Preview("Daemon requires approval") {
-  let state = LinkState()
-  state.allInterfaces = Interfaces.all(.sync)
-  state.daemonRegistration = .requiresApproval
   return MenuView().environment(state)
 }
 

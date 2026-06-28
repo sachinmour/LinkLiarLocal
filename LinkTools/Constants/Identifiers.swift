@@ -2,6 +2,5 @@
 // SPDX-License-Identifier: MIT
 
 enum Identifiers: String {
-  case gui = "io.github.halo.LinkLiar"
-  case daemon = "io.github.halo.LinkLiar.linkdaemon"
+  case gui = "com.sachinmour.LinkLiarLocal"
 }

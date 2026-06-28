@@ -49,57 +49,14 @@ extension Config {
     var ouis: OUIs {
       OUIs(dictionary: dictionary)
     }
-
-    ///
-    /// Queries settings of one Interface.
-    ///
-    func policy(_ hardMAC: MAC) -> Policy {
-      Policy(hardMAC.address, dictionary: dictionary)
-    }
-
-    ///
-    /// Queries settings of the "default" Interface.
-    ///
-    var fallbackPolicy: Policy {
-      Policy(Config.Key.theDefault.rawValue, dictionary: dictionary)
-    }
-
-    ///
-    /// Determines final values by comparing
-    /// specific Interfaces and fallback defaults.
-    ///
-    func arbiter(_ hardMAC: MAC) -> Config.Arbiter {
-      Config.Arbiter(config: self, hardMAC: hardMAC)
-    }
-
-    var isRecommended: Bool {
-      let interfaces = Interfaces.all(.async)
-
-      // If any Interface is random (or otherwise specified),
-      // then LinkLiar is doing what it's supposed to do (i.e. recommended usage).
-      if interfaces.contains(where: { arbiter($0.hardMAC).action == .random }) { return true }
-      if interfaces.contains(where: { arbiter($0.hardMAC).action == .specify }) { return true }
-      if interfaces.contains(where: { arbiter($0.hardMAC).action == .original }) { return true }
-
-      return false
-    }
   }
 }
 
 extension Config {
   enum Key: String {
-    case action
     case apple
-    case address
     case anonymize
-    case theDefault = "default"
-    case except
-    case denyScan = "deny_scan"
-    case rerandomize
-    case ssids
     case vendors
     case version
-    case recommendation
-    case restrictDaemon = "restrict_daemon"
   }
 }

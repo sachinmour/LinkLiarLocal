@@ -5,28 +5,48 @@ import XCTest
 @testable import LinkLiar
 
 final class LinkLiarTests: XCTestCase {
+  func testUnknownLegacyKeysDoNotHideInterfacesOrSuppressWarnings() {
+    let hardMAC = MAC("aa:bb:cc:dd:ee:ff")!
+    let state = LinkState([
+      "default": ["action": "hide"],
+      hardMAC.address: [
+        "action": "ignore",
+        "address": "02:11:22:33:44:55",
+        "legacy_network_rules": ["Cafe": "02:aa:bb:cc:dd:ee"]
+      ]
+    ])
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
+    state.allInterfaces = [
+      Interface(
+        bsd: BSD("en0")!,
+        hardMAC: hardMAC,
+        name: "Wi-Fi",
+        kind: "IEEE80211",
+        resolving: .none,
+        stubSoftMAC: hardMAC
+      )!
+    ]
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
+    XCTAssertEqual(1, state.allInterfaces.count)
+    XCTAssertTrue(state.warnAboutLeakage)
+  }
 
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
+  func testConcurrentMACChangesAreRefusedBeforePrompt() {
+    let state = LinkState()
+    let interface = Interface(
+      bsd: BSD("en0")!,
+      hardMAC: MAC("aa:bb:cc:dd:ee:ff")!,
+      name: "Wi-Fi",
+      kind: "IEEE80211",
+      resolving: .none,
+      stubSoftMAC: MAC("aa:bb:cc:dd:ee:ff")!
+    )!
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
+    state.manualActionInProgress = true
+    MACChangeService.randomizePrivate(interface: interface, state: state)
 
+    XCTAssertEqual("A MAC change is already in progress.", state.manualActionError)
+    XCTAssertNil(state.manualActionMessage)
+    XCTAssertTrue(state.manualActionInProgress)
+  }
 }

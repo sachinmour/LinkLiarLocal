@@ -1,7 +1,6 @@
 // Copyright (c) halo https://github.com/halo/LinkLiar
 // SPDX-License-Identifier: MIT
 
-import ServiceManagement
 import SwiftUI
 
 extension SettingsView {

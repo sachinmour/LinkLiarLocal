@@ -1,86 +1,154 @@
-[![Version](https://img.shields.io/github/release/halo/LinkLiar.svg?style=flat&label=version)](https://github.com/halo/LinkLiar/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/halo/LinkLiar/blob/master/LICENSE.md)
-[![](https://img.shields.io/github/issues-closed-raw/halo/LinkLiar.svg)](https://github.com/halo/linkliar/issues?q=is%3Aissue+is%3Aclosed)
-[![](https://img.shields.io/github/last-commit/halo/LinkLiar.svg)](https://github.com/halo/LinkLiar/commits/master)
-[![Build Status](https://github.com/halo/LinkLiar/actions/workflows/tests.yml/badge.svg)](https://github.com/halo/LinkLiar/actions)
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/halo/LinkLiar)
+# LinkLiar Local
 
-## Prevent your Mac from leaking MACs
+LinkLiar Local is a local-only macOS menu bar app for manually changing the MAC
+address of Wi-Fi and Ethernet interfaces.
 
-This is an intuitive macOS status menu application written in Swift to help you spoof the MAC addresses of your Wi-Fi and Ethernet interfaces. It is free open-source.
+This project is a security-hardened fork of the original
+[halo/LinkLiar](https://github.com/halo/LinkLiar). The original app, icon work,
+and MIT-licensed foundation belong to halo and the LinkLiar contributors. This
+fork keeps the useful manual interface controls and removes the privileged
+background automation surface.
 
-[➡️ How do I install this?](#installation)
+## What This Fork Does
 
-If you star this project (by clicking on ✭ in the top-right corner), you help me to prioritize among my open-source projects.
+- Lists local network interfaces with current and original MAC addresses.
+- Lets you manually choose an action per interface:
+  - `Randomize Private`
+  - `Randomize Vendor-like`
+  - `Restore Original`
+  - `Set Specific MAC`
+  - `Copy MAC`
+- Prompts for administrator approval for each MAC change.
+- Disassociates Wi-Fi before attempting a Wi-Fi MAC change.
+- Stores config and logs under your user Library:
+  - `~/Library/Application Support/LinkLiarLocal/config.json`
+  - `~/Library/Logs/LinkLiarLocal/linkliar.log`
+- Redacts MAC-looking values in logs by default.
 
-![Screenshot](https://cdn.rawgit.com/halo/LinkLiar/master/docs/screenshot_3.0.1b.svg)
+## Security Model
+
+LinkLiar Local is intentionally manual and local-only.
+
+Removed from the original runtime design:
+
+- Persistent root daemon
+- Bundled LaunchDaemon
+- XPC Mach service
+- Background policy engine
+- SSID/access-point rules
+- `airport` command-line dependency
+- GitHub updater checks and community/network links in the app
+
+It does not fetch updates, policy data, or vendor data at runtime.
+
+The privileged action path is limited to this command shape:
+
+```bash
+/sbin/ifconfig <enN> ether <mac>
+```
+
+Before any administrator prompt, the app validates that the selected BSD
+interface name matches `en` followed by digits, such as `en0`, and that the
+target MAC address parses as a normalized MAC address.
+
+The app does not install a background service. After quitting the app, there
+should be no long-running root LinkLiar process.
 
 ## Requirements
 
-* macOS Sierra (10.12) or later (see [releases](https://github.com/halo/LinkLiar/releases) for older versions).
-* Administrator privileges (you will be asked for your root password *once*).
+- macOS 14.0 or later
+- Xcode
+- Administrator privileges when applying a MAC change
 
-## Installation
+macOS and hardware support for MAC spoofing varies. Some interfaces, chips, or
+network states may refuse MAC changes even when the command is valid.
 
-If you have [Homebrew](https://brew.sh), just run `brew install --cask linkliar`.
+## Build From Source
 
-To install it manually, follow [these instructions](http://halo.github.io/LinkLiar/installation.html) in the documentation.
-
-## Documentation
-
-What you're looking at right now is the technical documentation.
-
-The end-user documentation is located at [halo.github.io/LinkLiar](http://halo.github.io/LinkLiar).
-
-There is also a source-code documentation in progress, see `bin/docs` for inspiration.
-
-## Limitations/Caveats
-
-* When your Wi-Fi (aka Airport) is turned off, you cannot change its MAC address. You need to turn it on first.
-* If you change a MAC address while the interface is connected, you will briefly loose connection.
-* If you rapidly close and open your MacBook, the MAC address may change while the Wi-Fi connection remains and you loose the connection (that is, if you have configured LinkLiar to re-randomize the MAC address).
-* Whenever you successfully changed your MAC address, your `System Preferences` will still show you the original hardware MAC address.
-  This is normal behavior and your actual network traffic uses the *new*, *changed* MAC address.
-* 2018 MacBooks cannot change their MAC address, [because of a bug in macOS](https://github.com/feross/SpoofMAC/issues/87#issuecomment-485280175).
-* As of macOS 12.3 (Monterey), the MAC address of an interface cannot be modified while connected to a network. That's why LinkLiar will disassociate from any connected network before modifying the MAC address.
-
-## Troubleshooting
-
-You can create this logfile and whenever it exists, all  LinkLiar components will write to it:
+Clone this fork:
 
 ```bash
-touch "/Library/Application Support/LinkLiar/linkliar.log"
+git clone https://github.com/sachinmour/LinkLiarLocal.git
+cd LinkLiarLocal
 ```
 
-Delete the log file again to silence logging.
-
-Once LinkLiar is started and the menu is visible, you can hold the Option ⌥ key for advanced options. This is only intended for developers.
-
-If you want a more colorful output, clone this git repository and run `bin/logs`.
-That's what I use when I'm debugging.
-This utility is also bundled in LinkLiar so you can run it with
+Build the release app:
 
 ```bash
-# Run this in a Terminal for live debugging logs.
-/Applications/LinkLiar.app/Contents/Resources/logs
+xcodebuild -project LinkLiar.xcodeproj -scheme LinkLiar -configuration Release -derivedDataPath /private/tmp/linkliar-derived CODE_SIGNING_ALLOWED=NO build
 ```
 
-## Development
+The built app will be at:
 
-![](./docs/modules_20211004c.svg)
+```text
+/private/tmp/linkliar-derived/Build/Products/Release/LinkLiar Local.app
+```
 
-#### HelpBook
+This README documents source builds only. No packaged install path is promised
+here.
 
-To update the HelpBook (end-user documentation), change the *source files* in [LinkLiarHelp/en.lproj](https://github.com/halo/LinkLiar/tree/master/LinkLiarHelp/en.lproj) and *then* generate the output with `bin/docs`.
+## Usage
 
-## Future work
+1. Launch `LinkLiar Local.app`.
+2. Open the menu bar item.
+3. Use the action menu beside a spoofable interface.
+4. Approve the macOS administrator prompt when changing a MAC address.
 
-* Add badge with test coverage to README
+Random modes:
 
-## Thanks
+- `Randomize Private` creates a locally administered unicast MAC like
+  `02:xx:xx:xx:xx:xx`.
+- `Randomize Vendor-like` uses bundled OUI/vendor data and generates a random
+  suffix.
 
-* The icon in `Link/Images.xcassets` is from [Iconmonstr](http://iconmonstr.com).
+`Restore Original` changes the interface back to its hardware MAC address.
+`Set Specific MAC` validates the address before requesting administrator
+approval.
+
+## Limitations And Safety
+
+- Changing a Wi-Fi MAC disconnects the active Wi-Fi network briefly.
+- macOS may reject MAC changes on some interfaces or while an interface is in a
+  particular state.
+- System Settings may still display the original hardware MAC address even when
+  network traffic uses the changed MAC.
+- Use this only on devices and networks where you are authorized to do so.
+
+## Development And Verification
+
+Build:
+
+```bash
+xcodebuild -project LinkLiar.xcodeproj -scheme LinkLiar -configuration Release -derivedDataPath /private/tmp/linkliar-derived CODE_SIGNING_ALLOWED=NO build
+```
+
+Run tests:
+
+```bash
+xcodebuild -project LinkLiar.xcodeproj -scheme LinkLiar -configuration Debug -derivedDataPath /private/tmp/linkliar-derived CODE_SIGNING_ALLOWED=NO test
+```
+
+Useful static checks for this fork:
+
+- No active runtime references to `SMAppService`, `MachServices`,
+  `LaunchDaemons`, `NSXPC`, `linkdaemon`, `URLSession`, GitHub API strings, or
+  old system-wide config paths.
+- No bundled `Contents/Library/LaunchDaemons`, `XPCServices`, or embedded daemon
+  in the built app.
+- No old `/tmp/linkliar.log`, `/tmp/linkliar.isolation.json`, or
+  `/Library/Application Support/io.github.halo.LinkLiar` runtime paths in the
+  release binary.
+- Manual acceptance should include confirming visible actions work, invalid
+  specific MAC input fails before an administrator prompt, Wi-Fi disassociates
+  before a Wi-Fi MAC change, restore works, concurrent changes are disabled, and
+  no background/root LinkLiar process remains after quitting.
+
+## Credits
+
+- Original project: [halo/LinkLiar](https://github.com/halo/LinkLiar)
+- Original author and copyright: halo
+- Local-only hardening fork changes: Sachin Mour
 
 ## License
 
-MIT 2012-2021 halo. See [MIT-LICENSE](https://github.com/halo/LinkLiar/blob/master/LICENSE.md).
+MIT. See [LICENSE.txt](LICENSE.txt).

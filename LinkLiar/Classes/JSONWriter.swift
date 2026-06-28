@@ -25,7 +25,9 @@ class JSONWriter {
         // We don't have write-permissions to the entire directory.
         // So we cannot create a temporary auxiliary file and "atomically" replace config.json,
         // Instead we modify the existing file in-place, since we're only allowed to do that.
+        Paths.prepareLocalStorage()
         try json.write(toFile: path, atomically: false, encoding: .utf8)
+        Paths.secureConfigFile()
         return true
       } catch {
         Log.error("Could not write: \(error)")
