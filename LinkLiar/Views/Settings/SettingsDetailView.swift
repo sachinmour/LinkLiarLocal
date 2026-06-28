@@ -12,35 +12,64 @@ struct SettingsDetailView: View {
   @Binding var selectedFolder: String?
 
   var body: some View {
-    VStack {
+    Group {
       switch selectedFolder {
       case nil:
-        EmptyView()
+        emptyState
 
       case SettingsView.Pane.welcome.rawValue:
-          SettingsView.WelcomeView().environment(state)
+        SettingsView.WelcomeView().environment(state)
 
       case SettingsView.Pane.help.rawValue:
-          SettingsView.FaqView().environment(state)
+        SettingsView.FaqView().environment(state)
 
       case SettingsView.Pane.vendors.rawValue:
-          SettingsView.VendorsView().environment(state)
+        SettingsView.VendorsView().environment(state)
 
       case SettingsView.Pane.troubleshoot.rawValue:
         SettingsView.TroubleshootView().environment(state)
 
-        case SettingsView.Pane.uninstall.rawValue:
-          SettingsView.UninstallView().environment(state)
+      case SettingsView.Pane.uninstall.rawValue:
+        SettingsView.UninstallView().environment(state)
 
       default:
         if let interface = state.allInterfaces.first(where: { $0.id == selectedFolder }) {
-          SettingsView.InterfacePolicyView().environment(state)
+          SettingsView.InterfacePolicyView()
+            .environment(state)
             .environment(interface)
         } else {
-          // The Interface currently edited was unplugged
-          EmptyView()
+          // The Interface currently edited was unplugged.
+          unpluggedInterfaceState
         }
       }
     }
+    .id(selectedFolder ?? "none")
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+  }
+
+  private var emptyState: some View {
+    VStack(spacing: 8) {
+      Image(systemName: "sidebar.left")
+        .symbolRenderingMode(.hierarchical)
+        .font(.system(size: 36))
+        .foregroundStyle(.tertiary)
+      Text("Select a topic from the sidebar.")
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+  }
+
+  private var unpluggedInterfaceState: some View {
+    VStack(spacing: 8) {
+      Image(systemName: "cable.connector")
+        .symbolRenderingMode(.hierarchical)
+        .font(.system(size: 36))
+        .foregroundStyle(.tertiary)
+      Text("That interface is no longer connected.")
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }

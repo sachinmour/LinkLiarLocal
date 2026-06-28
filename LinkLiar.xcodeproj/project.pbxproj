@@ -130,7 +130,12 @@
 		C2F7017D2B74FC98001390E1 /* PopularOUIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F7017C2B74FC98001390E1 /* PopularOUIs.swift */; };
 		C2F7017E2B74FC98001390E1 /* PopularOUIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F7017C2B74FC98001390E1 /* PopularOUIs.swift */; };
 		C2F7017F2B74FC98001390E1 /* PopularOUIs.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F7017C2B74FC98001390E1 /* PopularOUIs.swift */; };
+		D100000000000000000000A1 /* StatusPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000000000000B1 /* StatusPill.swift */; };
+		D100000000000000000000A2 /* InfoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000000000000B2 /* InfoCard.swift */; };
+		D100000000000000000000A3 /* CopyableMACText.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000000000000B3 /* CopyableMACText.swift */; };
+		D100000000000000000000A4 /* SettingsPaneHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000000000000000000B4 /* SettingsPaneHeader.swift */; };
 /* End PBXBuildFile section */
+
 
 /* Begin PBXContainerItemProxy section */
 		C26699372AE55EFD00592008 /* PBXContainerItemProxy */ = {
@@ -221,7 +226,12 @@
 		C2F701742B74F771001390E1 /* PopularVendors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PopularVendors.swift; path = Backends/PopularVendors.swift; sourceTree = "<group>"; };
 		C2F701782B74FB63001390E1 /* OUIs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OUIs.swift; path = Config/OUIs.swift; sourceTree = "<group>"; };
 		C2F7017C2B74FC98001390E1 /* PopularOUIs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PopularOUIs.swift; path = Backends/PopularOUIs.swift; sourceTree = "<group>"; };
+		D100000000000000000000B1 /* StatusPill.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusPill.swift; sourceTree = "<group>"; };
+		D100000000000000000000B2 /* InfoCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoCard.swift; sourceTree = "<group>"; };
+		D100000000000000000000B3 /* CopyableMACText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CopyableMACText.swift; sourceTree = "<group>"; };
+		D100000000000000000000B4 /* SettingsPaneHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsPaneHeader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
 
 /* Begin PBXFrameworksBuildPhase section */
 		C26699332AE55EFD00592008 /* Frameworks */ = {
@@ -467,6 +477,7 @@
 		C2969EFA2B278E2A00A9BB72 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				D100000000000000000000C1 /* Components */,
 				C2969EFB2B278E2A00A9BB72 /* Settings */,
 				C2969F092B278E2A00A9BB72 /* Menu */,
 			);
@@ -474,6 +485,18 @@
 			path = LinkLiar/Views;
 			sourceTree = "<group>";
 		};
+		D100000000000000000000C1 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				D100000000000000000000B1 /* StatusPill.swift */,
+				D100000000000000000000B2 /* InfoCard.swift */,
+				D100000000000000000000B3 /* CopyableMACText.swift */,
+				D100000000000000000000B4 /* SettingsPaneHeader.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+
 		C2969EFB2B278E2A00A9BB72 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
@@ -731,10 +754,15 @@
 				C24570252B41F996007D7AEA /* UninstallView.swift in Sources */,
 				C2456FEE2B3B1809007D7AEA /* NetworkObserver.swift in Sources */,
 				C2456FE62B3B1708007D7AEA /* Notifications.swift in Sources */,
+				D100000000000000000000A1 /* StatusPill.swift in Sources */,
+				D100000000000000000000A2 /* InfoCard.swift in Sources */,
+				D100000000000000000000A3 /* CopyableMACText.swift in Sources */,
+				D100000000000000000000A4 /* SettingsPaneHeader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C26699322AE55EFD00592008 /* Sources */ = {
+
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (

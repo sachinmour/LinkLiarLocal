@@ -7,13 +7,35 @@ struct InterfacesView: View {
   @Environment(LinkState.self) private var state
 
   var body: some View {
-    // Container for all Interfaces
-    VStack(alignment: .leading, spacing: 14) {
-      // One row per Interface
-      ForEach(state.allInterfaces) { interface in
-        InterfaceView(state: state, interface: interface)
+    if state.allInterfaces.isEmpty {
+      EmptyInterfacesView()
+    } else {
+      VStack(alignment: .leading, spacing: 2) {
+        ForEach(state.allInterfaces) { interface in
+          InterfaceView(state: state, interface: interface)
+        }
       }
     }
+  }
+}
+
+private struct EmptyInterfacesView: View {
+  var body: some View {
+    VStack(spacing: 8) {
+      Image(systemName: "antenna.radiowaves.left.and.right.slash")
+        .symbolRenderingMode(.hierarchical)
+        .font(.system(size: 28))
+        .foregroundStyle(.secondary)
+      Text("No network interfaces detected")
+        .font(.subheadline)
+        .foregroundStyle(.secondary)
+      Text("Connect a Wi-Fi or Ethernet adapter and try again.")
+        .font(.caption)
+        .foregroundStyle(.tertiary)
+        .multilineTextAlignment(.center)
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.vertical, 24)
   }
 }
 
@@ -21,4 +43,6 @@ struct InterfacesView: View {
   let state = LinkState()
   Controller.queryInterfaces(state: state)
   return InterfacesView().environment(state)
+    .frame(width: 340)
+    .padding()
 }

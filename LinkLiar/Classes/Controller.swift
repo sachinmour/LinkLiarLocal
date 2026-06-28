@@ -54,16 +54,17 @@ enum SettingsWindowPresenter {
 
     let hostingController = NSHostingController(rootView: SettingsView().environment(state))
     let settingsWindow = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 780, height: 500),
+      contentRect: NSRect(origin: .zero, size: SettingsWindowMetrics.initialSize),
       styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false
     )
 
     settingsWindow.title = "LinkLiar Local Settings"
+    settingsWindow.contentMinSize = SettingsWindowMetrics.minimumSize
     settingsWindow.contentViewController = hostingController
     settingsWindow.isReleasedWhenClosed = false
-    settingsWindow.setFrameAutosaveName("LinkLiarLocalSettingsWide")
+    settingsWindow.setFrameAutosaveName(SettingsWindowMetrics.autosaveName)
     settingsWindow.center()
 
     window = settingsWindow
