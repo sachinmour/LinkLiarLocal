@@ -19,7 +19,8 @@ background automation surface.
   - `Set Specific MAC`
   - `Copy MAC`
 - Prompts for administrator approval for each MAC change.
-- Disassociates Wi-Fi before attempting a Wi-Fi MAC change.
+- Requires Wi-Fi to be powered on before Wi-Fi MAC changes, then disassociates
+  Wi-Fi before applying the change.
 - Stores config and logs under your user Library:
   - `~/Library/Application Support/LinkLiarLocal/config.json`
   - `~/Library/Logs/LinkLiarLocal/linkliar.log`
@@ -50,6 +51,10 @@ The privileged action path is limited to this command shape:
 Before any administrator prompt, the app validates that the selected BSD
 interface name matches `en` followed by digits, such as `en0`, and that the
 target MAC address parses as a normalized MAC address.
+
+For Wi-Fi interfaces, the app also checks that Wi-Fi is powered on before
+requesting administrator approval. If Wi-Fi is off, the app shows a local error
+instead of running `ifconfig`.
 
 The app does not install a background service. After quitting the app, there
 should be no long-running root LinkLiar process.
@@ -108,6 +113,7 @@ approval.
 ## Limitations And Safety
 
 - Changing a Wi-Fi MAC disconnects the active Wi-Fi network briefly.
+- Wi-Fi must be turned on before changing or restoring a Wi-Fi MAC address.
 - macOS may reject MAC changes on some interfaces or while an interface is in a
   particular state.
 - System Settings may still display the original hardware MAC address even when

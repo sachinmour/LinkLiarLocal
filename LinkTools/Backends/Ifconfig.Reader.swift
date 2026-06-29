@@ -4,6 +4,7 @@
 import Foundation
 
 enum Ifconfig {}
+enum Networksetup {}
 
 extension Ifconfig {
   /// Runs the external exectuable `ifconfig` to dermine the current MAC address of an Interface.
@@ -107,5 +108,31 @@ extension Ifconfig {
     private lazy var command = {
       Command.init(Paths.ifconfigCLI, arguments: [BSDName, "ether"])
     }()
+  }
+}
+
+extension Networksetup {
+  class Reader {
+    static func hardwareMACsByBSD() -> [String: MAC] {
+      parse(Command(Paths.networksetupCLI, arguments: ["-listallhardwareports"]).run())
+    }
+
+    static func parse(_ stdout: String) -> [String: MAC] {
+      var addresses = [String: MAC]()
+      var currentBSD: String?
+
+      stdout.components(separatedBy: .newlines).forEach { line in
+        if line.hasPrefix("Device: ") {
+          currentBSD = String(line.dropFirst("Device: ".count))
+        } else if line.hasPrefix("Ethernet Address: "),
+                  let bsd = currentBSD,
+                  let mac = MAC(String(line.dropFirst("Ethernet Address: ".count))) {
+          addresses[bsd] = mac
+          currentBSD = nil
+        }
+      }
+
+      return addresses
+    }
   }
 }

@@ -31,20 +31,22 @@ struct Interfaces {
   ///
   private static func all(resolving: Interface.SoftMACResolving, using yield: (Interface) -> Void) {
     let interfaces = SCNetworkInterfaceCopyAll()
+    let hardwareMACsByBSD = Networksetup.Reader.hardwareMACsByBSD()
 
     for interfaceRef in interfaces {
       // swiftlint:disable force_cast
       guard let BSDName = SCNetworkInterfaceGetBSDName(interfaceRef as! SCNetworkInterface) else { continue }
       guard let name = SCNetworkInterfaceGetLocalizedDisplayName(interfaceRef as! SCNetworkInterface)
               as? String else { continue }
-      guard let hardMAC = SCNetworkInterfaceGetHardwareAddressString(interfaceRef as! SCNetworkInterface)
+      guard let systemMACString = SCNetworkInterfaceGetHardwareAddressString(interfaceRef as! SCNetworkInterface)
         else { continue }
       guard let type = SCNetworkInterfaceGetInterfaceType(interfaceRef as! SCNetworkInterface)
               as? String else { continue }
       // swiftlint:enable force_cast
 
       guard let bsd = BSD(BSDName as String) else { continue }
-      guard let hardMAC = MAC(hardMAC as String) else { continue }
+      guard let systemMAC = MAC(systemMACString as String) else { continue }
+      let hardMAC = hardwareMACsByBSD[bsd.name] ?? systemMAC
       guard let interface = Interface(bsd: bsd,
                                       hardMAC: hardMAC,
                                       name: name,

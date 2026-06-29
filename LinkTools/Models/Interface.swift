@@ -32,11 +32,10 @@ class Interface: Identifiable {
   // MARK: Instance Properties
 
   /// Conforming to `Identifiable`.
-  /// The only truly long-term unique identifier is the hardware MAC of an Interface.
-  var id: String { hardMAC.address }
+  var id: String { bsd.name }
 
   let bsd: BSD
-  let hardMAC: MAC
+  private(set) var hardMAC: MAC
   let kind: String
 
   // Not sure why, but some Ethernet interfaces have this redundantly in their name.
@@ -47,8 +46,7 @@ class Interface: Identifiable {
   }
 
   var softMAC: MAC? {
-    if let stub = stubSoftMAC { return stub }
-    return  _softMAC
+    _softMAC ?? stubSoftMAC
   }
 
   var softOUI: OUI {
@@ -89,8 +87,12 @@ class Interface: Identifiable {
     CWWiFiClient.shared().interface(withName: bsd.name) != nil
   }
 
+  var isWiFiHardware: Bool {
+    kind == "IEEE80211"
+  }
+
   var iconName: String {
-    if kind == "IEEE80211" { return "wifi" }
+    if isWiFiHardware { return "wifi" }
 
     return "cable.connector.horizontal"
   }
@@ -122,6 +124,10 @@ class Interface: Identifiable {
         }
       })
     }
+  }
+
+  func applyOriginalMACOverride(_ mac: MAC) {
+    hardMAC = mac
   }
 }
 

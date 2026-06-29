@@ -1,3 +1,0 @@
-#!/bin/sh
-
-xcodebuild test -scheme LinkLiar

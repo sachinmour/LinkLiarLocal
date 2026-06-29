@@ -33,6 +33,7 @@ class LinkState {
 
   // Network
   var allInterfaces = [Interface]()
+  var originalMACsByBSD = [String: MAC]()
 
   // Paths
 
@@ -52,5 +53,25 @@ class LinkState {
   // Derived
   var warnAboutLeakage: Bool {
     self.allInterfaces.contains(where: { $0.hasOriginalMAC })
+  }
+
+  func originalMAC(for interface: Interface) -> MAC {
+    let bsdName = interface.bsd.name
+
+    if let cachedOriginal = originalMACsByBSD[bsdName] {
+      return cachedOriginal
+    }
+
+    originalMACsByBSD[bsdName] = interface.hardMAC
+    return interface.hardMAC
+  }
+
+  func preserveOriginalMACs(in interfaces: [Interface]) -> [Interface] {
+    interfaces.forEach { interface in
+      let original = originalMAC(for: interface)
+      interface.applyOriginalMACOverride(original)
+    }
+
+    return interfaces
   }
 }

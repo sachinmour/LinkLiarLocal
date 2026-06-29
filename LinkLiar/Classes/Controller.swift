@@ -10,9 +10,13 @@ import SwiftUI
 class Controller {
   // MARK: Class Methods
 
+  static func refreshInterfaces(state: LinkState) {
+    Log.debug("Refreshing Interfaces...")
+    state.allInterfaces = state.preserveOriginalMACs(in: Interfaces.all(.sync))
+  }
+
   static func queryInterfaces(state: LinkState) {
-    Log.debug("Reloading Interfaces...")
-    state.allInterfaces = Interfaces.all(.async)
+    refreshInterfaces(state: state)
   }
 
   static func wantsToQuit(_ state: LinkState) {
@@ -31,12 +35,8 @@ class Controller {
     NSApplication.shared.terminate(nil)
   }
 
-  static func queryAllSoftMACs(_ state: LinkState) {
-    state.allInterfaces.forEach { $0.querySoftMAC() }
-  }
-
   static func troubleshoot(state: LinkState) {
-    queryInterfaces(state: state)
+    refreshInterfaces(state: state)
   }
 }
 
@@ -223,6 +223,7 @@ enum MACChangeService {
     case interfaceMissing(String)
     case interfaceNotSpoofable(String)
     case invalidMACAddress(String)
+    case wifiPoweredOff(String)
 
     var errorDescription: String? {
       switch self {
@@ -234,6 +235,8 @@ enum MACChangeService {
         return "Interface \(name) is not spoofable."
       case let .invalidMACAddress(address):
         return "Invalid MAC address: \(address)"
+      case let .wifiPoweredOff(name):
+        return "Turn Wi-Fi on before changing \(name)'s MAC address."
       }
     }
   }
@@ -252,9 +255,15 @@ enum MACChangeService {
   }
 
   static func restoreOriginal(interface: Interface, state: LinkState) {
+    let originalMAC = originalMACTarget(interface: interface, state: state)
+
     perform(interface: interface, state: state) {
-      interface.hardMAC
+      originalMAC
     }
+  }
+
+  static func originalMACTarget(interface: Interface, state: LinkState) -> MAC {
+    state.originalMAC(for: interface)
   }
 
   static func setSpecific(interface: Interface, address: String, state: LinkState) {
@@ -262,6 +271,11 @@ enum MACChangeService {
       guard let mac = MAC(address) else { throw ChangeError.invalidMACAddress(address) }
       return mac
     }
+  }
+
+  static func validateWiFiPower(interface: Interface, isPowerOn: Bool?) throws {
+    guard interface.isWiFiHardware else { return }
+    guard isPowerOn == true else { throw ChangeError.wifiPoweredOff(interface.bsd.name) }
   }
 
   private static func perform(interface: Interface, state: LinkState, target: @escaping () throws -> MAC) {
@@ -289,17 +303,20 @@ enum MACChangeService {
           throw ChangeError.interfaceNotSpoofable(selectedInterface.name)
         }
 
-        if selectedInterface.isWifi {
-          CWWiFiClient.shared().interface(withName: selectedInterface.bsd.name)?.disassociate()
+        let wifiInterface = CWWiFiClient.shared().interface(withName: selectedInterface.bsd.name)
+        try validateWiFiPower(interface: selectedInterface, isPowerOn: wifiInterface?.powerOn())
+
+        if selectedInterface.isWiFiHardware {
+          wifiInterface?.disassociate()
           Thread.sleep(forTimeInterval: 0.4)
         }
 
         Log.debug("Running approved MAC change for \(selectedInterface.bsd.name)")
         try AdminCommandRunner.runIfconfigEther(bsdName: selectedInterface.bsd.name, mac: targetMAC)
-        Thread.sleep(forTimeInterval: 0.7)
+        _ = waitForCurrentMAC(bsdName: selectedInterface.bsd.name, target: targetMAC)
 
         DispatchQueue.main.async {
-          Controller.queryAllSoftMACs(state)
+          Controller.refreshInterfaces(state: state)
           state.manualActionMessage = "\(selectedInterface.bsd.name) changed to \(targetMAC.anonymous(true))"
           state.manualActionInProgress = false
         }
@@ -311,5 +328,23 @@ enum MACChangeService {
         }
       }
     }
+  }
+
+  private static func waitForCurrentMAC(
+    bsdName: String,
+    target: MAC,
+    timeout: TimeInterval = 2.0,
+    interval: TimeInterval = 0.2
+  ) -> MAC? {
+    let deadline = Date().addingTimeInterval(timeout)
+    var latestMAC: MAC?
+
+    repeat {
+      latestMAC = Ifconfig.Reader(bsdName).softMAC()
+      if latestMAC == target { return latestMAC }
+      Thread.sleep(forTimeInterval: interval)
+    } while Date() < deadline
+
+    return latestMAC
   }
 }

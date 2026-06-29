@@ -56,7 +56,7 @@ struct LinkLiarApp: App {
   private func menuBarAppeared(_ _: Notification) {
     DispatchQueue.main.async {
       Log.debug("Menu Bar appeared")
-      Controller.queryAllSoftMACs(state)
+      Controller.refreshInterfaces(state: state)
 
       // If there was a "do you really want to quit?" warning,
       // we can remove it once the menu bar was closed and reopened.
@@ -67,14 +67,14 @@ struct LinkLiarApp: App {
   private func manualTrigger(_ _: Notification) {
     DispatchQueue.main.async {
       Log.debug("Manual softMAC querying requested")
-      Controller.queryAllSoftMACs(state)
+      Controller.refreshInterfaces(state: state)
     }
   }
 
   private func networkConditionsChanged() {
     DispatchQueue.main.async {
       Log.debug("Network change detected, acting upon it")
-      Controller.queryInterfaces(state: state)
+      Controller.refreshInterfaces(state: state)
     }
   }
 

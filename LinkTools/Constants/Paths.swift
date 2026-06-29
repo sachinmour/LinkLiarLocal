@@ -21,6 +21,7 @@ class Paths {
   static let debugLogFileURL = URL(fileURLWithPath: debugLogFile)
 
   static let ifconfigCLI = "/sbin/ifconfig"
+  static let networksetupCLI = "/usr/sbin/networksetup"
 
   static func prepareLocalStorage() {
     secureDirectory(configDirectoryURL)
